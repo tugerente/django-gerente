@@ -34,6 +34,6 @@ jobs:
     
     - run: uv sync
 
-    - run: uv run pip install --dev .
+    - run: uv pip install -e .
 
     - run: uv run pytest
