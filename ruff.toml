@@ -1,0 +1,34 @@
+exclude        = ["**/templates/*", "venv", ".venv", "migrations", "templates/*"]
+line-length    = 100
+target-version = "py311"
+
+[lint]
+    ignore = [
+        "D100",
+        "D101",
+        "D102",
+        "D103",
+        "D105",
+        "N806",
+        "E501",
+        #
+    ]
+
+    select = [
+        "B",
+        "E",
+        "F",
+        "I",
+        "ASYNC",
+        "T20",
+        "BLE",
+        "C4",
+        "W",
+        "UP",
+        "PIE",
+        # "DTZ", # TODO: Fix all unaware datetime usages
+        #
+    ]
+
+    [lint.isort]
+        known-first-party = ["gerente"]

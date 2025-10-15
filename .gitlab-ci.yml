@@ -1,0 +1,72 @@
+stages:
+  - version
+  - test
+  - release
+
+variables:
+  UV_CACHE_DIR: .uv-cache
+
+.uv-common: &uv_common
+  image: python:3.11-slim
+  before_script:
+    - python --version
+    - apt-get update && apt-get install -y --no-install-recommends curl ca-certificates git
+    - curl -fsSL https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+    - just --version
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - export PATH="$HOME/.local/bin:$PATH"
+    - uv --version
+
+test:
+  stage: test
+  <<: *uv_common
+  cache:
+    key: "uv-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - .uv-cache
+      - .venv/
+  script:
+    - uv sync --dev
+    - uv run pytest
+
+release:patch:
+  stage: version
+  <<: *uv_common
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+  script:
+    - just bump patch
+
+release:minor:
+  stage: version
+  <<: *uv_common
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+  script:
+    - just bump minor
+
+release:major:
+  stage: version
+  <<: *uv_common
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+  script:
+    - just bump major
+
+release:
+  stage: release
+  <<: *uv_common
+  needs: ["test"]
+  cache:
+    key: "uv-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - .uv-cache
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+(?:[.-].*)?$/
+  script:
+    - just verify-tag
+    - uv build --sdist --wheel
+    - just publish-ci
