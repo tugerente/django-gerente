@@ -30,6 +30,10 @@ jobs:
       with:
         enable-cache: true
 
-    - run: uvx install --dev
+    - run: uv venv
+    
+    - run: uv sync
 
-    - run: uvx pytest
+    - run: uv run pip install --dev .
+
+    - run: uv run pytest
